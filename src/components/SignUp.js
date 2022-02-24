@@ -4,62 +4,78 @@ import { useEffect, useReducer, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const SignUp = () => {
-    
-    const navigate = useNavigate()
+	const navigate = useNavigate()
 
-    const [formIsValid, setFormIsValid] = useState(false)
+	const [formIsValid, setFormIsValid] = useState(false)
 	const [nameState, dispatchName] = useReducer(nameReducer, {
 		value: '',
 		isValid: null,
 		error: '',
 	})
-	const [emailState, dispatchEmail] = useReducer(emailReducer,{
+	const [emailState, dispatchEmail] = useReducer(emailReducer, {
 		value: '',
 		isValid: null,
 		error: '',
-	} )
+	})
 	const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
 		value: '',
 		isValid: null,
 		error: '',
 	})
 
-	useEffect(()=> {
-		setFormIsValid(nameState.isValid && emailState.isValid && passwordState.isValid)
+	useEffect(() => {
+		setFormIsValid(
+			nameState.isValid && emailState.isValid && passwordState.isValid,
+		)
 	}, [nameState.isValid, emailState.isValid, passwordState.isValid])
 
 	const nameChangeHandler = (event) => {
 		dispatchName({ type: 'USER_INPUT', val: event.target.value })
-		// setFormIsValid(regex2.test(event.target.value))
 	}
 	const validateNameHandler = (event) => {
-		dispatchName({ type: 'INPUT_BLUR'})
+		dispatchName({ type: 'INPUT_BLUR' })
 	}
 
 	const emailChangeHandler = (event) => {
 		dispatchEmail({ type: 'USER_INPUT', val: event.target.value })
-		//setFormIsValid(regex.test(event.target.value))
 	}
 
 	const validateEmailHandler = () => {
-		dispatchEmail({ type: 'INPUT_BLUR'})
+		dispatchEmail({ type: 'INPUT_BLUR' })
 	}
 
 	const passwordHandler = (event) => {
 		dispatchPassword({ type: 'USER_INPUT', val: event.target.value })
-		//setFormIsValid(event.target.value.length > 5)
 	}
 
 	const validatePasswordHandler = (event) => {
 		dispatchPassword({ type: 'INPUT_BLUR', val: event.target.value })
 	}
 
+	async function addUserHandler(user) {
+		const response = await fetch(
+			'https://login-page-users-default-rtdb.firebaseio.com/users.json',
+			{
+				method: 'POST',
+				body: JSON.stringify(user),
+				headers: {
+					'Content-type': 'application/json',
+				},
+			},
+		)
+		const data = await response.json()
+		console.log(data)
+	}
 	const submitHandler = (event) => {
 		event.preventDefault()
-		const data = new FormData(event.target)
-		console.log(Object.fromEntries(data.entries()))
+		const user = {
+			userName: nameState.value,
+			eMail: emailState.value,
+			password: passwordState.value,
+		}
+		addUserHandler(user)
+		return navigate('/WelcomePage')
 	}
-
 	return (
 		<div className={classes.app}>
 			<form onSubmit={submitHandler}>
@@ -67,7 +83,9 @@ const SignUp = () => {
 				<div>
 					<label>User Name</label>
 					<input
-						className={`${nameState.isValid === false && classes.invalid} `}
+						className={`${
+							nameState.isValid === false && classes.invalid
+						} `}
 						placeholder='name'
 						onChange={nameChangeHandler}
 						type='text'
@@ -97,18 +115,12 @@ const SignUp = () => {
 					</span>
 				</div>
 
-				<button type='submit' disabled={!formIsValid} onClick={()=> {
-                    navigate('/WelcomePage')
-                }}>
+				<button type='submit' disabled={!formIsValid}>
 					submit
 				</button>
 			</form>
 		</div>
 	)
-
-
 }
 
-
-
- export default SignUp;
+export default SignUp
